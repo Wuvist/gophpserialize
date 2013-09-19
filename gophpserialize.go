@@ -110,7 +110,7 @@ func (s *Serializer) readValue() interface{} {
 
 		// array close }
 		s.move()
-		if len(l) > 0 {
+		if len(r) == 0 {
 			return l
 		}
 		return r
