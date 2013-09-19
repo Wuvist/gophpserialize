@@ -1,4 +1,4 @@
-phpgojson
-=========
+gophpserialize
+==============
 
-GO module to parse php serialised obj and convert to json format
+GO module to parse php serialised obj and help to convert to json.

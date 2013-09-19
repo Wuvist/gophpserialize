@@ -1,8 +1,8 @@
-package phpgojson
+package gophpserialize
 
 import (
-	"strconv"
 	"encoding/json"
+	"strconv"
 )
 
 type Serializer struct {
@@ -14,20 +14,20 @@ func (s *Serializer) SetRaw(msg []byte) {
 	s.raw = msg
 }
 
-func (s *Serializer) read() map[string]interface{}{
+func (s *Serializer) read() map[string]interface{} {
 	r := s.readValue().(map[string]interface{})
 	return r
 }
 
-func (s *Serializer) readType() string{
+func (s *Serializer) readType() string {
 	result := string(s.raw[s.pos])
 	s.move()
 	return result
 }
 
-func (s *Serializer) readInt() int{
+func (s *Serializer) readInt() int {
 	result := string(s.raw[s.pos])
-	for string(s.raw[s.pos + 1]) != ":" && string(s.raw[s.pos + 1]) != ";" {
+	for string(s.raw[s.pos+1]) != ":" && string(s.raw[s.pos+1]) != ";" {
 		s.move()
 		result = result + string(s.raw[s.pos])
 	}
@@ -39,7 +39,7 @@ func (s *Serializer) readInt() int{
 func (s *Serializer) readString(size int) string {
 	s.move()
 	result := ""
-	for i:=0 ;i<size; i++ {
+	for i := 0; i < size; i++ {
 		result = result + string(s.raw[s.pos])
 		s.move()
 	}
@@ -81,7 +81,7 @@ func (s *Serializer) readValue() interface{} {
 		r := make(map[string]interface{})
 		l := make([]interface{}, 0)
 
-		for i:=0; i< size; i++ {
+		for i := 0; i < size; i++ {
 			key := s.readValue()
 			val := s.readValue()
 			switch v2 := key.(type) {
