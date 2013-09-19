@@ -112,10 +112,8 @@ func Unmarshal(data []byte) map[string]interface{} {
 	return s.read()
 }
 
-func GoJson(msg []byte) []byte {
-	s := new(Serializer)
-	s.SetRaw(msg)
-	r := s.read()
-	j, _ := json.Marshal(r)
-	return j
+func PhpToJson(phpData []byte) (jsonData []byte, err error) {
+	r := Unmarshal(phpData)
+	jsonData, err = json.Marshal(r)
+	return
 }
