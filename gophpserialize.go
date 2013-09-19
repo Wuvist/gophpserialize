@@ -122,10 +122,10 @@ func (s *Serializer) move() {
 	s.pos += 1
 }
 
-func Unmarshal(data []byte) map[string]interface{} {
+func Unmarshal(data []byte) interface{} {
 	s := new(Serializer)
 	s.SetRaw(data)
-	return s.read()
+	return s.readValue()
 }
 
 func PhpToJson(phpData []byte) (jsonData []byte, err error) {
