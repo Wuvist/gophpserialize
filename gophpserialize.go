@@ -106,6 +106,12 @@ func (s *Serializer) move() {
 	s.pos += 1
 }
 
+func Unmarshal(data []byte) map[string]interface{} {
+	s := new(Serializer)
+	s.SetRaw(data)
+	return s.read()
+}
+
 func GoJson(msg []byte) []byte {
 	s := new(Serializer)
 	s.SetRaw(msg)
