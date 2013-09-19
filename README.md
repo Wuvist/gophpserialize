@@ -1,10 +1,8 @@
-gophpserialize
-==============
+# gophpserialize
 
 GO module to parse php serialised obj and help to convert to json.
 
 Currently only support unserialze php array.
-
 
 ## Example
 
