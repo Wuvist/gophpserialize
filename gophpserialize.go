@@ -25,6 +25,15 @@ func (s *Serializer) readType() string {
 	return result
 }
 
+func (s *Serializer) readBool() bool {
+	result := string(s.raw[s.pos])
+	s.move()
+	if result == "0" {
+		return false
+	}
+	return true
+}
+
 func (s *Serializer) readInt() int {
 	result := string(s.raw[s.pos])
 	for string(s.raw[s.pos+1]) != ":" && string(s.raw[s.pos+1]) != ";" {
@@ -57,6 +66,13 @@ func (s *Serializer) readValue() interface{} {
 	if objType == "i" {
 		s.move()
 		val := s.readInt()
+		s.move()
+		return val
+	}
+
+	if objType == "b" {
+		s.move()
+		val := s.readBool()
 		s.move()
 		return val
 	}
