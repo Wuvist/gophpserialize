@@ -45,6 +45,17 @@ func (s *Serializer) readInt() int {
 	return int(i)
 }
 
+func (s *Serializer) readFloat() float64 {
+	result := string(s.raw[s.pos])
+	for string(s.raw[s.pos+1]) != ":" && string(s.raw[s.pos+1]) != ";" {
+		s.move()
+		result = result + string(s.raw[s.pos])
+	}
+	d, _ := strconv.ParseFloat(result, 64)
+	s.move()
+	return d
+}
+
 func (s *Serializer) readString(size int) string {
 	s.move()
 	result := ""
@@ -66,6 +77,12 @@ func (s *Serializer) readValue() interface{} {
 	if objType == "i" {
 		s.move()
 		val := s.readInt()
+		s.move()
+		return val
+	}
+	if objType == "d" {
+		s.move()
+		val := s.readFloat()
 		s.move()
 		return val
 	}
@@ -115,7 +132,8 @@ func (s *Serializer) readValue() interface{} {
 		}
 		return r
 	}
-	return ""
+	println(string(s.raw))
+	panic("Unknown objType: " + objType)
 }
 
 func (s *Serializer) move() {
