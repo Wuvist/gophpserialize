@@ -114,14 +114,23 @@ func (s *Serializer) readValue() interface{} {
 		r := make(map[string]interface{})
 		l := make([]interface{}, 0)
 
+		//hack to handle array that has both string/int as key
+		//convert int key to string key
+		hasStringKey := false
+
 		for i := 0; i < size; i++ {
 			key := s.readValue()
 			val := s.readValue()
 			switch v2 := key.(type) {
 			case string:
+				hasStringKey = true
 				r[v2] = val
 			case int:
-				l = append(l, val)
+				if hasStringKey {
+					r[strconv.Itoa(v2)] = val
+				} else {
+					l = append(l, val)
+				}
 			}
 		}
 
