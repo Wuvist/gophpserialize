@@ -58,12 +58,10 @@ func (s *Serializer) readFloat() float64 {
 
 func (s *Serializer) readString(size int) string {
 	s.move()
-	result := ""
-	for i := 0; i < size; i++ {
-		result = result + string(s.raw[s.pos])
+	result := string([]rune(string(s.raw[s.pos : s.pos+size])))
+	for i := 0; i <= size; i++ {
 		s.move()
 	}
-	s.move()
 	return result
 }
 
