@@ -124,7 +124,7 @@ func (s *Serializer) readValue() interface{} {
 				hasStringKey = true
 				r[v2] = val
 			case int:
-				if hasStringKey {
+				if hasStringKey || v2 != i {
 					r[strconv.Itoa(v2)] = val
 				} else {
 					l = append(l, val)
