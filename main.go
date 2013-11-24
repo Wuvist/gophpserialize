@@ -1,4 +1,4 @@
-package gophpserialize
+package main
 
 import (
 	"fmt"
