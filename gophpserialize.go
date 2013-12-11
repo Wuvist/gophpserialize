@@ -132,6 +132,12 @@ func (s *Serializer) readValue() interface{} {
 			}
 		}
 
+		if len(r) > 0 && len(l) > 0 {
+			for i, val := range l {
+				r[strconv.Itoa(i)] = val
+			}
+		}
+
 		// array close }
 		s.move()
 		if len(r) == 0 {
