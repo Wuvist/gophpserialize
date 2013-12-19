@@ -19,80 +19,85 @@ func (s *Serializer) read() map[string]interface{} {
 	return r
 }
 
-func (s *Serializer) readType() string {
-	result := string(s.raw[s.pos])
+func (s *Serializer) readType() byte {
+	result := s.raw[s.pos]
 	s.move()
 	return result
 }
 
 func (s *Serializer) readBool() bool {
-	result := string(s.raw[s.pos])
+	result := s.raw[s.pos]
 	s.move()
-	if result == "0" {
+	if result == '0' {
 		return false
 	}
 	return true
 }
 
 func (s *Serializer) readInt() int {
-	result := string(s.raw[s.pos])
-	for string(s.raw[s.pos+1]) != ":" && string(s.raw[s.pos+1]) != ";" {
-		s.move()
-		result = result + string(s.raw[s.pos])
+	start := s.pos
+	end := start + 1
+
+	c := s.raw[end]
+	for c != ':' && c != ';' {
+		end = end + 1
+		c = s.raw[end]
 	}
-	i, _ := strconv.ParseInt(result, 10, 32)
-	s.move()
+	s.pos = end
+	i, _ := strconv.ParseInt(string(s.raw[start:end]), 10, 32)
 	return int(i)
 }
 
 func (s *Serializer) readFloat() float64 {
-	result := string(s.raw[s.pos])
-	for string(s.raw[s.pos+1]) != ":" && string(s.raw[s.pos+1]) != ";" {
-		s.move()
-		result = result + string(s.raw[s.pos])
+	start := s.pos
+	end := start + 1
+
+	c := s.raw[end]
+	for c != ':' && c != ';' {
+		end = end + 1
+		c = s.raw[end]
 	}
-	d, _ := strconv.ParseFloat(result, 64)
+	s.pos = end
+	d, _ := strconv.ParseFloat(string(s.raw[start:end]), 64)
 	s.move()
 	return d
 }
 
 func (s *Serializer) readString(size int) string {
 	s.move()
-	result := string([]rune(string(s.raw[s.pos : s.pos+size])))
-	for i := 0; i <= size; i++ {
-		s.move()
-	}
+	result := string(s.raw[s.pos : s.pos+size])
+	s.pos += size + 1
 	return result
 }
 
 func (s *Serializer) readValue() interface{} {
 	objType := s.readType()
-	if objType == "N" {
+	if objType == 'N' {
 		s.move()
 		return nil
 	}
 
-	if objType == "i" {
+	if objType == 'i' {
 		s.move()
 		val := s.readInt()
 		s.move()
 		return val
 	}
-	if objType == "d" {
+	if objType == 'd' {
 		s.move()
 		val := s.readFloat()
 		s.move()
 		return val
 	}
 
-	if objType == "b" {
+	if objType == 'b' {
 		s.move()
 		val := s.readBool()
 		s.move()
 		return val
 	}
 
-	if objType == "s" {
+	if objType == 's' {
 		s.move()
 		size := s.readInt()
 		s.move()
@@ -101,7 +106,7 @@ func (s *Serializer) readValue() interface{} {
 		return val
 	}
 
-	if objType == "a" {
+	if objType == 'a' {
 		s.move()
 		size := s.readInt()
 		s.move()
@@ -145,8 +150,7 @@ func (s *Serializer) readValue() interface{} {
 		}
 		return r
 	}
-	println(string(s.raw))
-	panic("Unknown objType: " + objType)
+	panic("Unknown objType: " + string(objType) + "\n" + string(s.raw))
 }
 
 func (s *Serializer) move() {
