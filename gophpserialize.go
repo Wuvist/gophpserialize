@@ -59,7 +59,6 @@ func (s *Serializer) readFloat() float64 {
 	}
 	s.pos = end
 	d, _ := strconv.ParseFloat(string(s.raw[start:end]), 64)
-	s.move()
 	return d
 }
 
