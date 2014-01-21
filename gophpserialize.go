@@ -2,7 +2,9 @@ package gophpserialize
 
 import (
 	"encoding/json"
+	"reflect"
 	"strconv"
+	"strings"
 )
 
 type Serializer struct {
@@ -152,8 +154,186 @@ func (s *Serializer) readValue() interface{} {
 	panic("Unknown objType: " + string(objType) + "\n" + string(s.raw))
 }
 
+func (s *Serializer) slice(v reflect.Value) error {
+	if v.Kind() == reflect.Ptr {
+		v = v.Elem()
+	}
+
+	t := v.Type()
+
+	objType := s.readType()
+
+	if objType != 'a' {
+		return &InvalidUnmarshalError{reflect.TypeOf(v)}
+	}
+	s.move()
+	size := s.readInt()
+	println(size)
+	s.move()
+
+	// array open {
+	s.move()
+
+	l := reflect.MakeSlice(t, size, size)
+
+	for i := 0; i < size; i++ {
+		s.readValue() //skip the key
+		elem := l.Index(i)
+		elem.Set(reflect.New(elem.Type().Elem()))
+		s.value(elem)
+	}
+
+	// array close }
+	s.move()
+
+	v.Set(l)
+	return nil
+}
+
+func (s *Serializer) obj(v reflect.Value) error {
+	e := v.Elem()
+	t := e.Type()
+
+	fields := make(map[string]reflect.Value)
+	for i := 0; i < e.NumField(); i++ {
+		thriftInfo := t.Field(i).Tag.Get("thrift")
+		pos := strings.Index(thriftInfo, ",")
+		fields[thriftInfo[0:pos]] = e.Field(i)
+	}
+
+	objType := s.readType()
+
+	if objType != 'a' {
+		return &InvalidUnmarshalError{reflect.TypeOf(v)}
+	}
+
+	s.move()
+	size := s.readInt()
+	s.move()
+
+	// array open {
+	s.move()
+
+	for i := 0; i < size; i++ {
+		key := s.readValue()
+
+		field, found := fields[key.(string)]
+		if found == false {
+			s.readValue()
+			continue
+		}
+
+		s.value(field)
+	}
+
+	// array close }
+	s.move()
+
+	return nil
+}
+
+func (s *Serializer) dict(v reflect.Value) error {
+	if v.Kind() == reflect.Ptr {
+		v = v.Elem()
+	}
+
+	t := v.Type()
+
+	objType := s.readType()
+
+	if objType != 'a' {
+		return &InvalidUnmarshalError{reflect.TypeOf(v)}
+	}
+
+	s.move()
+	size := s.readInt()
+	s.move()
+
+	// array open {
+	s.move()
+
+	m := reflect.MakeMap(t)
+
+	elem := m.Type().Elem()
+
+	for i := 0; i < size; i++ {
+		key := s.readValue().(string)
+		println(key)
+		val := reflect.New(elem).Elem()
+		s.value(val)
+		m.SetMapIndex(reflect.ValueOf(key), val)
+	}
+
+	// array close }
+	s.move()
+
+	v.Set(m)
+	return nil
+}
+
+func (s *Serializer) value(v reflect.Value) error {
+	kind := v.Kind()
+
+	switch kind {
+	case reflect.Ptr:
+		v2 := v.Elem()
+		kind = v2.Kind()
+		switch kind {
+		case reflect.String:
+			v2.SetString(s.readValue().(string))
+			return nil
+		case reflect.Int64:
+			v2.SetInt(s.readValue().(int64))
+			return nil
+		case reflect.Map:
+			return s.dict(v)
+		case reflect.Slice:
+			return s.slice(v)
+		case reflect.Struct:
+			return s.obj(v)
+		}
+	case reflect.Map:
+		return s.dict(v)
+	case reflect.String:
+		v.SetString(s.readValue().(string))
+		return nil
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		val := s.readValue().(int)
+		v.SetInt(int64(val))
+		return nil
+	}
+
+	return &InvalidUnmarshalError{reflect.TypeOf(v)}
+}
+
 func (s *Serializer) move() {
 	s.pos += 1
+}
+
+type InvalidUnmarshalError struct {
+	Type reflect.Type
+}
+
+func (e *InvalidUnmarshalError) Error() string {
+	if e.Type == nil {
+		return "json: Unmarshal(nil)"
+	}
+
+	if e.Type.Kind() != reflect.Ptr {
+		return "json: Unmarshal(non-pointer " + e.Type.String() + ")"
+	}
+	return "json: Unmarshal(nil " + e.Type.String() + ")"
+}
+
+func UnmarshalThrift(data []byte, v interface{}) error {
+	s := new(Serializer)
+	s.SetRaw(data)
+	rv := reflect.ValueOf(v)
+	if rv.Kind() != reflect.Ptr || rv.IsNil() {
+		return &InvalidUnmarshalError{reflect.TypeOf(v)}
+	}
+
+	return s.value(rv)
 }
 
 func Unmarshal(data []byte) interface{} {
