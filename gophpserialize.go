@@ -297,6 +297,10 @@ func (s *Serializer) value(v reflect.Value) error {
 	case reflect.String:
 		v.SetString(s.readValue().(string))
 		return nil
+	case reflect.Float64:
+		val := s.readValue().(float64)
+		v.SetFloat(val)
+		return nil
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		val := s.readValue().(int)
 		v.SetInt(int64(val))
