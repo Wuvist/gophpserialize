@@ -260,7 +260,13 @@ func (s *Serializer) dict(v reflect.Value) error {
 
 	for i := 0; i < size; i++ {
 		key := s.readValue().(string)
-		val := reflect.New(elem).Elem()
+		var val reflect.Value
+		if elem.Kind() == reflect.Ptr {
+			val = reflect.New(elem.Elem())
+		} else {
+			val = reflect.New(elem).Elem()
+		}
+
 		s.value(val)
 		m.SetMapIndex(reflect.ValueOf(key), val)
 	}
