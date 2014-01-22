@@ -197,7 +197,11 @@ func (s *Serializer) obj(v reflect.Value) error {
 	for i := 0; i < e.NumField(); i++ {
 		thriftInfo := t.Field(i).Tag.Get("thrift")
 		pos := strings.Index(thriftInfo, ",")
-		fields[thriftInfo[0:pos]] = e.Field(i)
+		field := e.Field(i)
+		if field.Kind() == reflect.Ptr && field.IsNil() {
+			field.Set(reflect.New(field.Type().Elem()))
+		}
+		fields[thriftInfo[0:pos]] = field
 	}
 
 	objType := s.readType()
