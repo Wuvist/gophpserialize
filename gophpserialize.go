@@ -151,7 +151,7 @@ func (s *Serializer) readValue() interface{} {
 		}
 		return r
 	}
-	panic("Unknown objType: " + string(objType) + "\n" + string(s.raw))
+	panic("Unknown objType: " + string(objType) + "\n" + strconv.Itoa(s.pos) + "\n\n" + string(s.raw))
 }
 
 func (s *Serializer) slice(v reflect.Value) error {
@@ -168,7 +168,6 @@ func (s *Serializer) slice(v reflect.Value) error {
 	}
 	s.move()
 	size := s.readInt()
-	println(size)
 	s.move()
 
 	// array open {
@@ -222,7 +221,6 @@ func (s *Serializer) obj(v reflect.Value) error {
 			s.readValue()
 			continue
 		}
-
 		s.value(field)
 	}
 
@@ -258,7 +256,6 @@ func (s *Serializer) dict(v reflect.Value) error {
 
 	for i := 0; i < size; i++ {
 		key := s.readValue().(string)
-		println(key)
 		val := reflect.New(elem).Elem()
 		s.value(val)
 		m.SetMapIndex(reflect.ValueOf(key), val)
