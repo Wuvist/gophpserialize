@@ -293,6 +293,8 @@ func (s *Serializer) value(v reflect.Value) error {
 		case reflect.Struct:
 			return s.obj(v)
 		}
+	case reflect.Slice:
+		return s.slice(v)
 	case reflect.Map:
 		return s.dict(v)
 	case reflect.String:
