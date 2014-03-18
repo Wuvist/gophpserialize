@@ -149,6 +149,33 @@ func (s *Serializer) readValue() interface{} {
 		}
 		return r
 	}
+
+	if objType == 'O' {
+		s.move()
+		size := s.readInt()
+		s.move()
+		s.readString(size)
+		s.move()
+		objectSize := s.readInt()
+		s.move()
+
+		// object content open
+		s.move()
+
+		r := make(map[string]interface{})
+
+		//hack to handle array that has both string/int as key
+
+		for i := 0; i < objectSize; i++ {
+			propertyName := s.readValue().(string)
+			val := s.readValue()
+			r[propertyName] = val
+		}
+
+		// object content close }
+		s.move()
+		return r
+	}
 	panic("Unknown objType: " + string(objType) + "\n" + string(s.raw))
 }
 

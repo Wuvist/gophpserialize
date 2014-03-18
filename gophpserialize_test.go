@@ -62,3 +62,16 @@ func TestPhpToJsonComplex(t *testing.T) {
 		println(string(obj))
 	}
 }
+
+func TestPhpToJsonObject(t *testing.T) {
+	data := `O:7:"Student":3:{s:4:"name";s:11:"Nanhe Kumar";s:11:"Studentroll";i:1;s:4:"*age";i:16;}`
+	obj, err := PhpToJson([]byte(data))
+	if err != nil {
+		t.Error(err)
+	}
+	jsonStr := `{"*age":16,"Studentroll":1,"name":"Nanhe Kumar"}`
+	if string(obj) != jsonStr {
+		t.Error("convert to json object error")
+		println(string(obj))
+	}
+}
