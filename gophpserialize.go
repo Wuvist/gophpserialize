@@ -3,6 +3,7 @@ package gophpserialize
 import (
 	"encoding/json"
 	"strconv"
+	"strings"
 )
 
 type Serializer struct {
@@ -66,7 +67,7 @@ func (s *Serializer) readString(size int) string {
 	s.move()
 	result := string(s.raw[s.pos : s.pos+size])
 	s.pos += size + 1
-	return result
+	return strings.Replace(result, "\000", "", -1)
 }
 
 func (s *Serializer) readValue() interface{} {
