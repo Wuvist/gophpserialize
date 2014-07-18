@@ -1,6 +1,8 @@
 package gophpserialize
 
-import "testing"
+import (
+"testing"
+)
 
 func TestUnmarshal(t *testing.T) {
 	data := `a:3:{s:5:"apple";i:1;s:6:"orange";i:2;s:5:"grape";i:3;}`
@@ -16,6 +18,12 @@ func TestUnmarshal(t *testing.T) {
 	if obj["grape"] != 3 {
 		t.Error("Unmarshal failed")
 	}
+
+	data = `a:1:{s:7:"catalog";a:3:{i:2;a:4:{s:5:"width";s:3:"236";s:6:"height";s:3:"345";s:7:"quality";s:2:"90";s:13:"image_formats";s:3:"jpg";}i:1;a:4:{s:5:"width";s:3:"160";s:6:"height";s:3:"160";s:7:"quality";s:2:"80";s:13:"image_formats";s:3:"jpg";}i:3;a:4:{s:5:"width";s:3:"160";s:6:"height";s:3:"160";s:7:"quality";s:2:"80";s:13:"image_formats";s:3:"jpg";}}`
+	obj = Unmarshal([]byte(data)).(map[string]interface{})
+        if _, hasV := obj["catalog"].(map[string]interface{})["0"]; hasV ==true {
+           t.Error("Unmarshal failed")
+        }
 }
 
 func TestPhpToJson(t *testing.T) {
@@ -39,7 +47,7 @@ func TestPhpToJson2(t *testing.T) {
 
 	obj, _ := PhpToJson([]byte(data))
 
-	jsonStr := `{"0":{"id_language":"1","is_default":"1","iso2_code":"en","name":"English"},"2":{"id_language":"2","is_default":"0","iso2_code":"zh","name":"Chinese"}}`
+	jsonStr := `{"1":{"id_language":"1","is_default":"1","iso2_code":"en","name":"English"},"2":{"id_language":"2","is_default":"0","iso2_code":"zh","name":"Chinese"}}`
 
 	if string(obj) != jsonStr {
 		t.Error("convert to json error")

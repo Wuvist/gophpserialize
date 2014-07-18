@@ -120,6 +120,7 @@ func (s *Serializer) readValue() interface{} {
 		//hack to handle array that has both string/int as key
 		//convert int key to string key
 		hasStringKey := false
+		notAList := false
 
 		for i := 0; i < size; i++ {
 			key := s.readValue()
@@ -129,8 +130,11 @@ func (s *Serializer) readValue() interface{} {
 				hasStringKey = true
 				r[v2] = val
 			case int:
-				if hasStringKey || v2 != i {
+				if hasStringKey || v2 != i || notAList {
 					r[strconv.Itoa(v2)] = val
+					if v2 != i {
+						notAList = true
+					}
 				} else {
 					l = append(l, val)
 				}
